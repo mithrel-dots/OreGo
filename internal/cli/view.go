@@ -9,31 +9,36 @@ import (
 
 	"github.com/spf13/cobra"
 	"orego/internal/db"
+	"orego/internal/tui"
 )
 
 var (
 	useIcat bool
+	useTui  bool
 )
 
 var viewCmd = &cobra.Command{
 	Use:   "view [id]",
-	Short: "Open a screenshot in the default viewer",
-	Args:  cobra.ExactArgs(1),
-	Run:   runView,
+	Short: "Open a screenshot in the default viewer or interactive TUI",
+	Args: func(cmd *cobra.Command, args []string) error {
+		if useTui {
+			return nil
+		}
+		if len(args) != 1 {
+			return fmt.Errorf("accepts 1 arg(s), received %d", len(args))
+		}
+		return nil
+	},
+	Run: runView,
 }
 
 func init() {
 	viewCmd.Flags().BoolVarP(&useIcat, "icat", "i", true, "Render image in terminal using kitty icat")
+	viewCmd.Flags().BoolVar(&useTui, "tui", false, "Open interactive TUI")
 	rootCmd.AddCommand(viewCmd)
 }
 
 func runView(cmd *cobra.Command, args []string) {
-	id, err := strconv.ParseInt(args[0], 10, 64)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Invalid ID: %v\n", err)
-		os.Exit(1)
-	}
-
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error getting home dir: %v\n", err)
@@ -47,6 +52,20 @@ func runView(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 	defer store.Close()
+
+	if useTui {
+		if err := tui.RenderTable(store); err != nil {
+			fmt.Fprintf(os.Stderr, "Error running TUI: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	id, err := strconv.ParseInt(args[0], 10, 64)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Invalid ID: %v\n", err)
+		os.Exit(1)
+	}
 
 	path, err := store.GetScreenshotPath(id)
 	if err != nil {
