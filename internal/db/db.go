@@ -207,7 +207,16 @@ func (s *Store) ListAllPaths() (map[int64]string, error) {
 }
 
 func (s *Store) DeleteScreenshot(id int64) error {
-	_, err := s.db.Exec("DELETE FROM screenshots WHERE id = ?", id)
+	path, err := s.GetScreenshotPath(id)
+	if err != nil {
+		return err
+	}
+
+	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("failed to delete file %s: %w", path, err)
+	}
+
+	_, err = s.db.Exec("DELETE FROM screenshots WHERE id = ?", id)
 	return err
 }
 
