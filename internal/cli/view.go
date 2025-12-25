@@ -11,6 +11,10 @@ import (
 	"orego/internal/db"
 )
 
+var (
+	useIcat bool
+)
+
 var viewCmd = &cobra.Command{
 	Use:   "view [id]",
 	Short: "Open a screenshot in the default viewer",
@@ -19,6 +23,7 @@ var viewCmd = &cobra.Command{
 }
 
 func init() {
+	viewCmd.Flags().BoolVarP(&useIcat, "icat", "i", true, "Render image in terminal using kitty icat")
 	rootCmd.AddCommand(viewCmd)
 }
 
@@ -53,6 +58,18 @@ func runView(cmd *cobra.Command, args []string) {
 		fmt.Fprintf(os.Stderr, "File no longer exists: %s\n", path)
 		fmt.Println("Tip: Run 'orego cleanup' to remove stale records.")
 		os.Exit(1)
+	}
+
+	if useIcat {
+		fmt.Printf("Rendering %s with icat...\n", path)
+		icatCmd := exec.Command("kitty", "+kitten", "icat", path)
+		icatCmd.Stdout = os.Stdout
+		icatCmd.Stderr = os.Stderr
+		if err := icatCmd.Run(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error running icat: %v\n", err)
+			os.Exit(1)
+		}
+		return
 	}
 
 	fmt.Printf("Opening %s...\n", path)
