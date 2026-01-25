@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -92,6 +93,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.status = fmt.Sprintf("Opened %s", sel.FilePath)
 			}
 			return m, nil
+		case "c":
+			idx := m.table.Cursor()
+			if idx >= 0 && idx < len(m.entries) {
+				sel := m.entries[idx]
+				file, err := os.Open(sel.FilePath)
+				if err != nil {
+					if os.IsNotExist(err) {
+						m.status = fmt.Sprintf("Missing file: %s", sel.FilePath)
+					} else {
+						m.status = fmt.Sprintf("Open failed: %v", err)
+					}
+					return m, nil
+				}
+				defer file.Close()
+
+				copyCmd := exec.Command("wl-copy", "--type", "image/png")
+				copyCmd.Stdin = file
+				if err := copyCmd.Run(); err != nil {
+					m.status = fmt.Sprintf("Copy failed: %v", err)
+					return m, nil
+				}
+				m.status = "Copied to clipboard"
+			}
+			return m, nil
 		case "d":
 			idx := m.table.Cursor()
 			if idx >= 0 && idx < len(m.entries) {
@@ -123,7 +148,7 @@ func (m model) View() string {
 }
 
 func (m model) renderFooter() string {
-	left := "↑/↓ to navigate • enter=open • d=delete • q=quit"
+	left := "↑/↓ to navigate • enter=open • c=copy • d=delete • q=quit"
 	right := fmt.Sprintf("%d items", len(m.entries))
 	if m.status != "" {
 		right = m.status + " • " + right

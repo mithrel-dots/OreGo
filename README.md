@@ -90,6 +90,12 @@ Open a screenshot by ID.
 orego view 42
 ```
 
+### Copy
+Copy a screenshot to the clipboard by ID.
+```bash
+orego copy 42
+```
+
 ### Cleanup
 ```bash
 orego cleanup
