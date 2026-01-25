@@ -9,21 +9,16 @@ import (
 
 	"github.com/spf13/cobra"
 	"orego/internal/db"
-	"orego/internal/tui"
 )
 
 var (
 	useIcat bool
-	useTui  bool
 )
 
 var viewCmd = &cobra.Command{
 	Use:   "view [id]",
-	Short: "Open a screenshot in the default viewer or interactive TUI",
+	Short: "Open a screenshot in the default viewer",
 	Args: func(cmd *cobra.Command, args []string) error {
-		if useTui {
-			return nil
-		}
 		if len(args) != 1 {
 			return fmt.Errorf("accepts 1 arg(s), received %d", len(args))
 		}
@@ -34,7 +29,6 @@ var viewCmd = &cobra.Command{
 
 func init() {
 	viewCmd.Flags().BoolVarP(&useIcat, "icat", "i", true, "Render image in terminal using kitty icat")
-	viewCmd.Flags().BoolVar(&useTui, "tui", false, "Open interactive TUI")
 	rootCmd.AddCommand(viewCmd)
 }
 
@@ -52,14 +46,6 @@ func runView(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 	defer store.Close()
-
-	if useTui {
-		if err := tui.RenderTable(store); err != nil {
-			fmt.Fprintf(os.Stderr, "Error running TUI: %v\n", err)
-			os.Exit(1)
-		}
-		return
-	}
 
 	id, err := strconv.ParseInt(args[0], 10, 64)
 	if err != nil {
@@ -81,7 +67,7 @@ func runView(cmd *cobra.Command, args []string) {
 
 	if useIcat {
 		fmt.Printf("Rendering %s with icat...\n", path)
-		
+
 		// Open the file to pipe it into stdin
 		file, err := os.Open(path)
 		if err != nil {
@@ -95,7 +81,7 @@ func runView(cmd *cobra.Command, args []string) {
 		icatCmd.Stdin = file
 		icatCmd.Stdout = os.Stdout
 		icatCmd.Stderr = os.Stderr
-		
+
 		if err := icatCmd.Run(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error running icat: %v\n", err)
 			os.Exit(1)

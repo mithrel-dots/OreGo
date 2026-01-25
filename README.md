@@ -79,6 +79,9 @@ orego capture --ocr
 # List recent
 orego list
 
+# Interactive TUI
+orego list --tui
+
 # Filter
 orego list --filter-by app firefox
 orego list --filter-by title "GitHub"

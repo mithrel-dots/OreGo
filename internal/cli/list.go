@@ -8,22 +8,25 @@ import (
 
 	"github.com/spf13/cobra"
 	"orego/internal/db"
+	"orego/internal/tui"
 )
 
 var (
 	filterField string
 	filterValue string
+	useTui      bool
 )
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List recent screenshots",
+	Short: "List recent screenshots or open TUI",
 	Run:   runList,
 }
 
 func init() {
 	listCmd.Flags().StringVar(&filterField, "filter-by", "", "Field to filter by (app, title)")
 	listCmd.Flags().StringVar(&filterValue, "value", "", "Value to search for")
+	listCmd.Flags().BoolVar(&useTui, "tui", false, "Open interactive TUI")
 	rootCmd.AddCommand(listCmd)
 }
 
@@ -45,6 +48,14 @@ func runList(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 	defer store.Close()
+
+	if useTui {
+		if err := tui.RenderTable(store); err != nil {
+			fmt.Fprintf(os.Stderr, "Error running TUI: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	}
 
 	screenshots, err := store.ListScreenshots(50, filterField, filterValue)
 	if err != nil {
