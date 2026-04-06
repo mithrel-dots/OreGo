@@ -15,6 +15,7 @@ var (
 	filterField string
 	filterValue string
 	useTui      bool
+	useTv       bool
 )
 
 var listCmd = &cobra.Command{
@@ -27,6 +28,7 @@ func init() {
 	listCmd.Flags().StringVar(&filterField, "filter-by", "", "Field to filter by (app, title)")
 	listCmd.Flags().StringVar(&filterValue, "value", "", "Value to search for")
 	listCmd.Flags().BoolVar(&useTui, "tui", false, "Open interactive TUI")
+	listCmd.Flags().BoolVar(&useTv, "tv", false, "Output tab-separated rows for television")
 	rootCmd.AddCommand(listCmd)
 }
 
@@ -48,6 +50,24 @@ func runList(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 	defer store.Close()
+
+	if useTv {
+		screenshots, err := store.ListScreenshots(0, "", "")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error listing screenshots: %v\n", err)
+			os.Exit(1)
+		}
+		for _, sc := range screenshots {
+			fmt.Fprintf(os.Stdout, "%d\t%s\t%s\t%s\t%s\n",
+				sc.ID,
+				sc.Capture.Ts.Local().Format("2006-01-02 15:04"),
+				sc.ActiveWindow.Class,
+				sc.ActiveWindow.Title,
+				sc.FilePath,
+			)
+		}
+		return
+	}
 
 	if useTui {
 		if err := tui.RenderTable(store); err != nil {

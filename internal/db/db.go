@@ -231,3 +231,46 @@ func (s *Store) GetScreenshotPath(id int64) (string, error) {
 	}
 	return path, err
 }
+
+func (s *Store) GetScreenshot(id int64) (*models.Screenshot, error) {
+	var sc models.Screenshot
+	var ts time.Time
+
+	err := s.db.QueryRow(`
+		SELECT
+			id, file_path,
+			capture_ts, capture_timezone, capture_hostname, capture_user, capture_command, capture_version,
+			active_window_address, active_window_class, active_window_title, active_window_pid,
+			active_window_floating, active_window_fullscreen, active_window_xwayland, active_window_pinned,
+			workspace_id, workspace_name, workspace_monitor, workspace_windows, workspace_has_fullscreen, workspace_last_window_title
+		FROM screenshots WHERE id = ?`, id).Scan(
+		&sc.ID, &sc.FilePath,
+		&ts, &sc.Capture.Timezone, &sc.Capture.Hostname, &sc.Capture.User, &sc.Capture.Command, &sc.Capture.Version,
+		&sc.ActiveWindow.Address, &sc.ActiveWindow.Class, &sc.ActiveWindow.Title, &sc.ActiveWindow.Pid,
+		&sc.ActiveWindow.State.Floating, &sc.ActiveWindow.State.Fullscreen, &sc.ActiveWindow.State.Xwayland, &sc.ActiveWindow.State.Pinned,
+		&sc.Workspace.ID, &sc.Workspace.Name, &sc.Workspace.Monitor, &sc.Workspace.Windows, &sc.Workspace.HasFullscreen, &sc.Workspace.LastWindowTitle,
+	)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("screenshot with ID %d not found", id)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to query screenshot: %w", err)
+	}
+	sc.Capture.Ts = ts
+
+	rows, err := s.db.Query("SELECT address, class, title, pid, workspace_id FROM clients WHERE screenshot_id = ?", id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query clients: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var c models.Client
+		if err := rows.Scan(&c.Address, &c.Class, &c.Title, &c.Pid, &c.WorkspaceID); err != nil {
+			return nil, fmt.Errorf("failed to scan client: %w", err)
+		}
+		sc.Clients = append(sc.Clients, c)
+	}
+
+	return &sc, nil
+}
