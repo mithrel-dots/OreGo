@@ -113,6 +113,29 @@ orego path 42
 orego cleanup
 ```
 
+### Tarragon Integration
+
+OreGo exposes a read-only manifest command used by Tarragon's system-plugin flow:
+
+```bash
+orego tarragon manifest
+```
+
+This command prints a stable TOML manifest to stdout with no side effects.
+`tarragon enable orego` uses this output as the integration contract,
+then rewrites `entrypoint` to OreGo's resolved absolute binary path.
+
+Tarragon then uses these on-call commands against the same entrypoint:
+
+```bash
+orego tarragon query "<text>"
+orego tarragon select <result-id> [action]
+```
+
+- `query` prints one JSON payload with screenshot results.
+- `select` executes against `result-id` directly (no prior query state required).
+- Supported actions are `open` (default) and `delete`.
+
 ## Configuration (Hyprland)
 
 Put this in your `hyprland.conf`:
