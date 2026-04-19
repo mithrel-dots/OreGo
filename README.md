@@ -14,7 +14,7 @@ By storing metadata alongside the file path, you can:
 
 ## Architecture
 
-It's a static Go binary using Cobra for the CLI and SQLite for storage.
+It's a Go binary using Cobra for the CLI and SQLite for storage.
 
 *   **Language:** Go
 *   **Database:** SQLite
@@ -27,18 +27,18 @@ It's a static Go binary using Cobra for the CLI and SQLite for storage.
 
 ## Features
 
-### 📸 Context-Aware Capture
+### Context-Aware Capture
 Fetches the active window's class and title before taking the shot.
 
-### 🔍 Searchable Database
+### Searchable Database
 Everything goes into `~/.local/share/orego/orego.db`.
 *   **List:** See recent captures.
 *   **Filter:** `orego list --filter-by app firefox`
 
-### 🧠 OCR (Optional)
+### OCR (Optional)
 If you have `tesseract` installed, you can use `orego capture --ocr` to grab text from the screen and copy it to your clipboard. It doesn't save the image to the DB in this mode.
 
-### 🧹 Cleanup
+### Cleanup
 `orego cleanup` checks if the files still exist and removes dead rows from the database.
 
 ## Installation

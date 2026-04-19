@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"strings"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
+	_ "modernc.org/sqlite"
 	"orego/internal/db"
 )
 
@@ -165,7 +165,7 @@ func searchScreenshots(query string) []screenshotCandidate {
 	}
 
 	dsn := fmt.Sprintf("file:%s?mode=ro", dbPath)
-	dbConn, err := sql.Open("sqlite3", dsn)
+	dbConn, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil
 	}
