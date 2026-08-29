@@ -7,13 +7,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const tarragonManifestTOML = `name = "orego"
+const tarragonManifestTOML = `id = "orego"
+name = "OreGo"
 description = "Search and open OreGo screenshots"
 enabled = true
 entrypoint = "orego"
 lifecycle_mode = "on_call"
 provides_general_suggestions = false
-prefix = "orego "
+prefix = "orego"
 build_dependencies = []
 capabilities = ["suggest", "screenshot"]
 `

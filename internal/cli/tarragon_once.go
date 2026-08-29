@@ -30,8 +30,11 @@ type tarragonResultItem struct {
 }
 
 type tarragonAction struct {
-	Name    string `json:"name"`
-	Default bool   `json:"default,omitempty"`
+	Name        string `json:"name"`
+	Type        string `json:"type,omitempty"`
+	Query       string `json:"query,omitempty"`
+	Default     bool   `json:"default,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 type tarragonSearchResponse struct {

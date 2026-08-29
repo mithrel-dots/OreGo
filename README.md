@@ -125,6 +125,10 @@ This command prints a stable TOML manifest to stdout with no side effects.
 `tarragon enable orego` uses this output as the integration contract,
 then rewrites `entrypoint` to OreGo's resolved absolute binary path.
 
+The manifest uses `orego` as the stable plugin ID and `OreGo` as the display
+name. Its `prefix` is the bare token `orego`; Tarragon applies the configured
+global prefix symbol when routing queries (for example, `@orego`).
+
 Tarragon then uses these on-call commands against the same entrypoint:
 
 ```bash
@@ -135,6 +139,11 @@ orego tarragon select <result-id> [action]
 - `query` prints one JSON payload with screenshot results.
 - `select` executes against `result-id` directly (no prior query state required).
 - Supported actions are `open` (default) and `delete`.
+
+On-call invocations receive `TARRAGON_PLUGIN_ID`, `TARRAGON_PLUGIN_NAME`,
+`TARRAGON_PLUGIN_DISPLAY_NAME`, `TARRAGON_PLUGIN_PREFIX`, and
+`TARRAGON_PREFIX_SYMBOL` from Tarragon. OreGo does not maintain a persistent
+plugin connection, so the persistent-plugin `hello` handshake does not apply.
 
 ## Configuration (Hyprland)
 
