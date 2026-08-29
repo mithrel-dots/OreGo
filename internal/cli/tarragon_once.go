@@ -63,7 +63,7 @@ func runTarragonOnce(cmd *cobra.Command, query string) error {
 			PreviewPath: r.Path,
 			Actions: []tarragonAction{
 				{Name: "open", Default: true},
-				{Name: "delete"},
+				{Name: "delete", Type: "keep_open"},
 			},
 			Score: r.Score,
 		})
